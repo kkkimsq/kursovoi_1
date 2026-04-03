@@ -1,0 +1,273 @@
+@{
+    ViewData["Title"] = "Панель системного администратора";
+    var doctorReport = ViewBag.DoctorReport as List<WebApplication1.Services.DoctorAnalyticsDto>;
+    var serviceReport = ViewBag.ServiceReport as List<WebApplication1.Services.ServicePopularityDto>;
+    var patientReport = ViewBag.PatientReport as List<WebApplication1.Services.PatientActivityDto>;
+    var systemSummary = ViewBag.SystemSummary as WebApplication1.Services.SystemSummaryDto;
+    var hourlyLoad = ViewBag.HourlyLoad as List<WebApplication1.Services.HourlyLoadDto>;
+}
+
+<div class="container-fluid mt-4">
+    <h2>⚙️ Панель системного администратора</h2>
+
+    <!-- Фильтр по датам -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form asp-action="Dashboard" method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Дата начала</label>
+                    <input type="date" name="start" class="form-control" value="@ViewBag.StartDate" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Дата окончания</label>
+                    <input type="date" name="end" class="form-control" value="@ViewBag.EndDate" />
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary me-2">🔄 Обновить</button>
+                    <a asp-action="Dashboard" class="btn btn-outline-secondary">Сбросить</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (systemSummary != null)
+    {
+        <!-- Сводная статистика -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h3>@systemSummary.TotalDoctors</h3>
+                        <p>Всего врачей</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h3>@systemSummary.TotalAppointments</h3>
+                        <p>Всего записей</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h3>@systemSummary.ActivePatients</h3>
+                        <p>Активных пациентов</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-dark">
+                    <div class="card-body text-center">
+                        <h3>@systemSummary.TotalRevenue.ToString("N0") ₽</h3>
+                        <p>Общая выручка</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Дополнительная статистика -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">📊 Статус записей</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Новые:</strong> @systemSummary.NewAppointments</p>
+                        <p><strong>Завершённые:</strong> @systemSummary.CompletedAppointments</p>
+                        <p><strong>Отменённые:</strong> @systemSummary.CancelledAppointments</p>
+                        <hr />
+                        <p><strong>Конверсия:</strong> @systemSummary.ConversionRate.ToString("F1")%</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">👥 Пациенты</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Всего:</strong> @systemSummary.TotalPatients</p>
+                        <p><strong>Активных:</strong> @systemSummary.ActivePatients</p>
+                        <p><strong>Средний чек:</strong> @systemSummary.AverageCheck.ToString("N2") ₽</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">💰 Финансы</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Выручка:</strong> @systemSummary.TotalRevenue.ToString("N2") ₽</p>
+                        <p><strong>Средняя запись:</strong> @systemSummary.AverageAppointmentCost.ToString("N2") ₽</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Топ врачей -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">🏆 Топ врачей по загрузке</h5>
+            <a asp-action="DoctorReport" class="btn btn-sm btn-outline-primary">Подробнее</a>
+        </div>
+        <div class="card-body">
+            @if (doctorReport != null && doctorReport.Any())
+            {
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Врач</th>
+                            <th>Записей</th>
+                            <th>Выручка</th>
+                            <th>Загрузка</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var doc in doctorReport.Take(5))
+                        {
+                            <tr>
+                                <td>@doc.FullName</td>
+                                <td>@doc.TotalAppointments</td>
+                                <td>@doc.TotalRevenue.ToString("N2") ₽</td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-success" role="progressbar" 
+                                             style="width: @Math.Min(doc.UtilizationRate, 100)%">
+                                            @doc.UtilizationRate.ToString("F1")%
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+
+    <!-- Популярные услуги -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">💊 Популярные услуги</h5>
+            <a asp-action="ServiceReport" class="btn btn-sm btn-outline-primary">Подробнее</a>
+        </div>
+        <div class="card-body">
+            @if (serviceReport != null && serviceReport.Any())
+            {
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Услуга</th>
+                            <th>Количество</th>
+                            <th>Выручка</th>
+                            <th>% от всех</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var svc in serviceReport.Take(5))
+                        {
+                            <tr>
+                                <td>@svc.ServiceName</td>
+                                <td>@svc.BookingsCount</td>
+                                <td>@svc.TotalRevenue.ToString("N2") ₽</td>
+                                <td>@svc.PercentageOfTotal.ToString("F1")%</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+
+    <!-- Активные пациенты -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">👤 Активные пациенты</h5>
+            <a asp-action="PatientReport" class="btn btn-sm btn-outline-primary">Подробнее</a>
+        </div>
+        <div class="card-body">
+            @if (patientReport != null && patientReport.Any())
+            {
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Пациент</th>
+                            <th>Визитов</th>
+                            <th>Расходы</th>
+                            <th>Последний визит</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var pat in patientReport.Take(5))
+                        {
+                            <tr>
+                                <td>@pat.FullName</td>
+                                <td>@pat.TotalVisits</td>
+                                <td>@pat.TotalSpent.ToString("N2") ₽</td>
+                                <td>@pat.LastVisitDate?.ToString("dd.MM.yyyy")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+
+    <!-- Почасовая загрузка -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">🕐 Почасовая загрузка</h5>
+            <a asp-action="HourlyLoadReport" class="btn btn-sm btn-outline-primary">Подробнее</a>
+        </div>
+        <div class="card-body">
+            @if (hourlyLoad != null && hourlyLoad.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th>Время</th>
+                                @foreach (var hour in Enumerable.Range(8, 12))
+                                {
+                                    <th>@hour:00</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var load in hourlyLoad.GroupBy(h => h.Date).Take(7))
+                            {
+                                <tr>
+                                    <td>@load.Key.ToString("dd.MM")</td>
+                                    @foreach (var hour in Enumerable.Range(8, 12))
+                                    {
+                                        var hourData = load.FirstOrDefault(h => h.Hour == hour);
+                                        var count = hourData?.AppointmentsCount ?? 0;
+                                        var className = count == 0 ? "bg-light" : 
+                                                        count <= 2 ? "bg-success bg-opacity-25" : 
+                                                        count <= 4 ? "bg-warning bg-opacity-25" : "bg-danger bg-opacity-25";
+                                        <td class="@className">@count</td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Экспорт -->
+    <div class="mt-4">
+        <form asp-action="ExportDoctorReport" method="post" class="d-inline">
+            <input type="hidden" name="start" value="@ViewBag.StartDate" />
+            <input type="hidden" name="end" value="@ViewBag.EndDate" />
+            <button type="submit" class="btn btn-success">📥 Экспорт отчёта (CSV)</button>
+        </form>
+    </div>
+</div>

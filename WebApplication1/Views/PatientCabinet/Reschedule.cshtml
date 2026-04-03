@@ -1,0 +1,80 @@
+@model WebApplication1.Models.RecordingSlot
+@{
+    ViewData["Title"] = "Перенос записи";
+    var currentSlot = ViewBag.CurrentSlot as WebApplication1.Models.RecordingSlot;
+    var availableSlots = ViewBag.AvailableSlots as List<WebApplication1.Models.RecordingSlot>;
+}
+
+<div class="container mt-4">
+    <h2>📅 Перенос записи</h2>
+
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Текущая запись</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Врач:</strong> @currentSlot.Doctor?.FullName</p>
+                    <p><strong>Специализация:</strong> @currentSlot.Doctor?.Specialization?.Name</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Услуга:</strong> @currentSlot.Service?.Name</p>
+                    <p><strong>Дата и время:</strong> @currentSlot.Date.ToString("dd.MM.yyyy") в @currentSlot.StartTime.ToString("HH:mm")</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0">Выберите новое время</h5>
+        </div>
+        <div class="card-body">
+            @if (availableSlots != null && availableSlots.Any())
+            {
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Дата</th>
+                            <th>Время</th>
+                            <th>Выбрать</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var slot in availableSlots)
+                        {
+                            <tr>
+                                <td>@slot.Date.ToString("dd.MM.yyyy")</td>
+                                <td>@slot.StartTime.ToString("HH:mm")</td>
+                                <td>
+                                    <form asp-action="ConfirmReschedule" method="post" 
+                                          onsubmit="return confirm('Вы уверены, что хотите перенести запись на это время?');">
+                                        <input type="hidden" name="currentSlotId" value="@currentSlot.SlotId" />
+                                        <input type="hidden" name="newSlotId" value="@slot.SlotId" />
+                                        <button type="submit" class="btn btn-sm btn-success">
+                                            ✅ Выбрать это время
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    К сожалению, нет доступных слотов для этого врача и услуги в выбранном периоде.
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a asp-action="Index" class="btn btn-secondary">
+            ← Назад к личному кабинету
+        </a>
+    </div>
+</div>

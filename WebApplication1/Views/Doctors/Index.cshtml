@@ -1,6 +1,9 @@
 ﻿@model IEnumerable<WebApplication1.Models.Doctor>
 @{
     ViewData["Title"] = "Врачи";
+    var specialties = ViewBag.Specialties as List<WebApplication1.Models.Specialty>;
+    var currentSpecialtyId = ViewBag.CurrentSpecialtyId as int?;
+    var searchName = ViewBag.SearchName as string;
 }
 
 <div class="text-center mb-5">
@@ -8,39 +11,90 @@
     <p>Выберите врача для записи на прием.</p>
 </div>
 
-<div class="row">
-    @foreach (var doctor in Model)
-    {
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 text-center">
-                <div class="card-body">
-                    <div class="rounded-circle mb-3 mx-auto"
-                         style="width: 100px; height: 100px; background-color: #D9D9D9;
-                                    display: flex; align-items: center; justify-content: center;">
-                        <span style="font-size: 40px;">👨‍️</span>
-                    </div>
-                    <h5 class="card-title">@doctor.FullName</h5>
-                    <p class="text-primary">@doctor.Specialization?.Name</p>
-
-                    @if (User.Identity.IsAuthenticated)
+<!-- Фильтры -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form asp-action="Index" method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Специализация</label>
+                <select name="specialtyId" class="form-select">
+                    <option value="">Все специализации</option>
+                    @if (specialties != null)
                     {
-                        <a href="@Url.Action("Create", "Appointments",
-                                                              new { doctorId = doctor.DoctorId })"
-                   class="btn btn-primary"
-                   style="background-color: #0040C1; border-color: #0040C1;">
-                    Записаться
-                </a>
-                                }
-                    else
-                    {
-                        <a href="@Url.Action("Login", "Account")"
-                           class="btn btn-primary"
-                           style="background-color: #0040C1; border-color: #0040C1;">
-                            Записаться
-                        </a>
+                        @foreach (var spec in specialties)
+                        {
+                            <option value="@spec.SpecialtyId" selected="@(currentSpecialtyId == spec.SpecialtyId)">
+                                @spec.Name
+                            </option>
+                        }
                     }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Поиск по имени</label>
+                <input type="text" name="searchName" class="form-control" 
+                       placeholder="ФИО врача" value="@searchName" />
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    🔍 Найти
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    Сбросить
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (Model.Any())
+{
+    <div class="row">
+        @foreach (var doctor in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 text-center">
+                    <div class="card-body">
+                        <div class="rounded-circle mb-3 mx-auto"
+                             style="width: 100px; height: 100px; background-color: #D9D9D9;
+                                    display: flex; align-items: center; justify-content: center;">
+                            <span style="font-size: 40px;">👨‍⚕️</span>
+                        </div>
+                        <h5 class="card-title">@doctor.FullName</h5>
+                        <p class="text-primary">@doctor.Specialization?.Name</p>
+                        
+                        <a asp-action="Details" asp-route-id="@doctor.DoctorId" 
+                           class="btn btn-outline-primary mb-2">
+                            Подробнее
+                        </a>
+                        
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <a href="@Url.Action("Create", "Appointments",
+                                              new { doctorId = doctor.DoctorId })"
+                               class="btn btn-primary"
+                               style="background-color: #0040C1; border-color: #0040C1;">
+                                Записаться
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("Login", "Account")"
+                               class="btn btn-primary"
+                               style="background-color: #0040C1; border-color: #0040C1;">
+                                Записаться
+                            </a>
+                        }
+                    </div>
                 </div>
             </div>
-        </div>
-    }
-</div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-info text-center">
+        <i class="bi bi-info-circle"></i>
+        По заданным фильтрам врачей не найдено. Попробуйте изменить параметры поиска.
+    </div>
+}
