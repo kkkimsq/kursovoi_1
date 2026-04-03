@@ -190,7 +190,7 @@ namespace WebApplication1.Services
                                 .Where(s => s.ServiceId == service.ServiceId 
                                          && s.Date >= startDateOnly && s.Date <= endDateOnly)
                                 .Count() / 
-                                (double)((endDateOnly - startDateOnly).Days + 1),
+                                (double)((endDateOnly.DayNumber - startDateOnly.DayNumber) + 1),
                             PopularityRank = 0 // Будет рассчитано отдельно
                         };
 
@@ -269,10 +269,10 @@ namespace WebApplication1.Services
                 .Sum(s => (decimal?)s.Service.Price) ?? 0;
 
             var avgAppointmentsPerDay = totalAppointments / 
-                (double)((endDateOnly - startDateOnly).Days + 1);
+                (double)((endDateOnly.DayNumber - startDateOnly.DayNumber) + 1);
 
             var conversionRate = totalPatients > 0 
-                ? (bookedAppointments * 100.0 / (totalPatients * ((endDateOnly - startDateOnly).Days + 1))) 
+                ? (bookedAppointments * 100.0 / (totalPatients * ((endDateOnly.DayNumber - startDateOnly.DayNumber) + 1))) 
                 : 0;
 
             // Топ врачей по количеству записей
@@ -338,10 +338,6 @@ namespace WebApplication1.Services
         {
             var query = from schedule in _context.Schedules
                         where schedule.DoctorId == doctorId && schedule.Date == date
-                        join slot in _context.RecordingSlots 
-                            on new { schedule.DoctorId, schedule.Date, Hour = (int?)slot.StartTime.Hour } 
-                            equals new { schedule.DoctorId, Date = slot.Date, Hour = (int?)slot.StartTime.Hour } 
-                            into slotsGroup
                         select new HourlyLoadDto
                         {
                             Date = schedule.Date,
@@ -349,10 +345,21 @@ namespace WebApplication1.Services
                             EndHour = schedule.EndTime.Hour,
                             ScheduledMinutes = (schedule.EndTime.Hour - schedule.StartTime.Hour) * 60 + 
                                              (schedule.EndTime.Minute - schedule.StartTime.Minute),
-                            BookedSlots = slotsGroup.Count(s => s.PatientId != null),
-                            FreeSlots = slotsGroup.Count(s => s.PatientId == null),
-                            UtilizationPercent = slotsGroup.Any() 
-                                ? (slotsGroup.Count(s => s.PatientId != null) * 100.0 / slotsGroup.Count()) 
+                            BookedSlots = _context.RecordingSlots
+                                .Where(s => s.DoctorId == schedule.DoctorId && s.Date == schedule.Date)
+                                .Count(s => s.PatientId != null),
+                            FreeSlots = _context.RecordingSlots
+                                .Where(s => s.DoctorId == schedule.DoctorId && s.Date == schedule.Date)
+                                .Count(s => s.PatientId == null),
+                            UtilizationPercent = _context.RecordingSlots
+                                .Where(s => s.DoctorId == schedule.DoctorId && s.Date == schedule.Date)
+                                .Any()
+                                ? (_context.RecordingSlots
+                                    .Where(s => s.DoctorId == schedule.DoctorId && s.Date == schedule.Date)
+                                    .Count(s => s.PatientId != null) * 100.0 / 
+                                   _context.RecordingSlots
+                                    .Where(s => s.DoctorId == schedule.DoctorId && s.Date == schedule.Date)
+                                    .Count())
                                 : 0
                         };
 
