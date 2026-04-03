@@ -31,12 +31,12 @@ namespace WebApplication1.Services
         {
             var start = startDate ?? DateOnly.FromDateTime(DateTime.Today).AddDays(-30).ToDateTime(TimeOnly.MinValue);
             var end = endDate ?? DateTime.Now;
+            var startDateOnly = DateOnly.FromDateTime(start);
+            var endDateOnly = DateOnly.FromDateTime(end);
 
             // Сложный SELECT запрос с множественными JOIN и агрегацией
             var query = from doctor in _context.Doctors
                         join specialty in _context.Specialties on doctor.SpecializationId equals specialty.SpecializationId
-                        join schedule in _context.Schedules on doctor.DoctorId equals schedule.DoctorId into schedulesGroup
-                        join slot in _context.RecordingSlots on doctor.DoctorId equals slot.DoctorId into slotsGroup
                         select new DoctorAnalyticsDto
                         {
                             DoctorId = doctor.DoctorId,
@@ -44,94 +44,110 @@ namespace WebApplication1.Services
                             SpecializationName = specialty.Name,
                             
                             // Общее количество рабочих дней
-                            TotalWorkDays = schedulesGroup
-                                .Where(s => s.Date >= DateOnly.FromDateTime(start) && s.Date <= DateOnly.FromDateTime(end))
+                            TotalWorkDays = _context.Schedules
+                                .Where(s => s.DoctorId == doctor.DoctorId 
+                                         && s.Date >= startDateOnly && s.Date <= endDateOnly)
                                 .Select(s => s.Date)
                                 .Distinct()
                                 .Count(),
                             
                             // Общее количество рабочих часов
-                            TotalWorkHours = schedulesGroup
-                                .Where(s => s.Date >= DateOnly.FromDateTime(start) && s.Date <= DateOnly.FromDateTime(end))
+                            TotalWorkHours = _context.Schedules
+                                .Where(s => s.DoctorId == doctor.DoctorId 
+                                         && s.Date >= startDateOnly && s.Date <= endDateOnly)
                                 .Sum(s => (decimal)(s.EndTime.Hour - s.StartTime.Hour + (s.EndTime.Minute - s.StartTime.Minute) / 60.0)),
                             
                             // Количество записей всего
-                            TotalAppointments = slotsGroup
-                                .Where(s => s.Date >= DateOnly.FromDateTime(start) && s.Date <= DateOnly.FromDateTime(end))
+                            TotalAppointments = _context.RecordingSlots
+                                .Where(s => s.DoctorId == doctor.DoctorId 
+                                         && s.Date >= startDateOnly && s.Date <= endDateOnly)
                                 .Count(),
                             
                             // Количество завершённых записей (есть запись в Appointment)
-                            CompletedAppointments = slotsGroup
-                                .Where(s => s.Date >= DateOnly.FromDateTime(start) && s.Date <= DateOnly.FromDateTime(end) 
-                                          && s.Appointment != null)
+                            CompletedAppointments = _context.RecordingSlots
+                                .Where(s => s.DoctorId == doctor.DoctorId 
+                                         && s.Date >= startDateOnly && s.Date <= endDateOnly 
+                                         && s.Appointment != null)
                                 .Count(),
                             
                             // Количество отменённых записей (PatientId = null после бронирования)
-                            CancelledAppointments = slotsGroup
-                                .Where(s => s.Date >= DateOnly.FromDateTime(start) && s.Date <= DateOnly.FromDateTime(end) 
-                                          && s.PatientId == null)
+                            CancelledAppointments = _context.RecordingSlots
+                                .Where(s => s.DoctorId == doctor.DoctorId 
+                                         && s.Date >= startDateOnly && s.Date <= endDateOnly 
+                                         && s.PatientId == null)
                                 .Count(),
                             
                             // Общая выручка врача
-                            TotalRevenue = slotsGroup
-                                .Where(s => s.Date >= DateOnly.FromDateTime(start) && s.Date <= DateOnly.FromDateTime(end) 
-                                          && s.Appointment != null)
+                            TotalRevenue = _context.RecordingSlots
+                                .Where(s => s.DoctorId == doctor.DoctorId 
+                                         && s.Date >= startDateOnly && s.Date <= endDateOnly 
+                                         && s.Appointment != null)
                                 .Sum(s => (decimal?)s.Service.Price) ?? 0,
                             
                             // Средняя стоимость приёма
-                            AverageAppointmentCost = slotsGroup
-                                .Where(s => s.Date >= DateOnly.FromDateTime(start) && s.Date <= DateOnly.FromDateTime(end) 
-                                          && s.Appointment != null && s.Service.Price > 0)
+                            AverageAppointmentCost = _context.RecordingSlots
+                                .Where(s => s.DoctorId == doctor.DoctorId 
+                                         && s.Date >= startDateOnly && s.Date <= endDateOnly 
+                                         && s.Appointment != null && s.Service.Price > 0)
                                 .Average(s => (decimal?)s.Service.Price) ?? 0,
                             
                             // Количество уникальных пациентов
-                            UniquePatients = slotsGroup
-                                .Where(s => s.Date >= DateOnly.FromDateTime(start) && s.Date <= DateOnly.FromDateTime(end) 
-                                          && s.PatientId != null)
+                            UniquePatients = _context.RecordingSlots
+                                .Where(s => s.DoctorId == doctor.DoctorId 
+                                         && s.Date >= startDateOnly && s.Date <= endDateOnly 
+                                         && s.PatientId != null)
                                 .Select(s => s.PatientId)
                                 .Distinct()
                                 .Count(),
                             
                             // Загрузка по дням недели (понедельник)
-                            MondayAppointments = slotsGroup
-                                .Where(s => s.Date >= DateOnly.FromDateTime(start) && s.Date <= DateOnly.FromDateTime(end) 
-                                          && s.Date.DayOfWeek == DayOfWeek.Monday)
+                            MondayAppointments = _context.RecordingSlots
+                                .Where(s => s.DoctorId == doctor.DoctorId 
+                                         && s.Date >= startDateOnly && s.Date <= endDateOnly 
+                                         && s.Date.DayOfWeek == DayOfWeek.Monday)
                                 .Count(),
                             
                             // Загрузка по дням недели (вторник)
-                            TuesdayAppointments = slotsGroup
-                                .Where(s => s.Date >= DateOnly.FromDateTime(start) && s.Date <= DateOnly.FromDateTime(end) 
-                                          && s.Date.DayOfWeek == DayOfWeek.Tuesday)
+                            TuesdayAppointments = _context.RecordingSlots
+                                .Where(s => s.DoctorId == doctor.DoctorId 
+                                         && s.Date >= startDateOnly && s.Date <= endDateOnly 
+                                         && s.Date.DayOfWeek == DayOfWeek.Tuesday)
                                 .Count(),
                             
                             // Загрузка по дням недели (среда)
-                            WednesdayAppointments = slotsGroup
-                                .Where(s => s.Date >= DateOnly.FromDateTime(start) && s.Date <= DateOnly.FromDateTime(end) 
-                                          && s.Date.DayOfWeek == DayOfWeek.Wednesday)
+                            WednesdayAppointments = _context.RecordingSlots
+                                .Where(s => s.DoctorId == doctor.DoctorId 
+                                         && s.Date >= startDateOnly && s.Date <= endDateOnly 
+                                         && s.Date.DayOfWeek == DayOfWeek.Wednesday)
                                 .Count(),
                             
                             // Загрузка по дням недели (четверг)
-                            ThursdayAppointments = slotsGroup
-                                .Where(s => s.Date >= DateOnly.FromDateTime(start) && s.Date <= DateOnly.FromDateTime(end) 
-                                          && s.Date.DayOfWeek == DayOfWeek.Thursday)
+                            ThursdayAppointments = _context.RecordingSlots
+                                .Where(s => s.DoctorId == doctor.DoctorId 
+                                         && s.Date >= startDateOnly && s.Date <= endDateOnly 
+                                         && s.Date.DayOfWeek == DayOfWeek.Thursday)
                                 .Count(),
                             
                             // Загрузка по дням недели (пятница)
-                            FridayAppointments = slotsGroup
-                                .Where(s => s.Date >= DateOnly.FromDateTime(start) && s.Date <= DateOnly.FromDateTime(end) 
-                                          && s.Date.DayOfWeek == DayOfWeek.Friday)
+                            FridayAppointments = _context.RecordingSlots
+                                .Where(s => s.DoctorId == doctor.DoctorId 
+                                         && s.Date >= startDateOnly && s.Date <= endDateOnly 
+                                         && s.Date.DayOfWeek == DayOfWeek.Friday)
                                 .Count(),
                             
                             // Процент заполненности расписания
-                            ScheduleUtilizationPercent = schedulesGroup
-                                .Where(s => s.Date >= DateOnly.FromDateTime(start) && s.Date <= DateOnly.FromDateTime(end))
+                            ScheduleUtilizationPercent = _context.Schedules
+                                .Where(s => s.DoctorId == doctor.DoctorId 
+                                         && s.Date >= startDateOnly && s.Date <= endDateOnly)
                                 .Any() 
-                                ? (slotsGroup
-                                    .Where(s => s.Date >= DateOnly.FromDateTime(start) && s.Date <= DateOnly.FromDateTime(end) 
-                                              && s.PatientId != null)
+                                ? (_context.RecordingSlots
+                                    .Where(s => s.DoctorId == doctor.DoctorId 
+                                             && s.Date >= startDateOnly && s.Date <= endDateOnly 
+                                             && s.PatientId != null)
                                     .Count() * 100.0 / 
-                                   (schedulesGroup
-                                    .Where(s => s.Date >= DateOnly.FromDateTime(start) && s.Date <= DateOnly.FromDateTime(end))
+                                   (_context.Schedules
+                                    .Where(s => s.DoctorId == doctor.DoctorId 
+                                             && s.Date >= startDateOnly && s.Date <= endDateOnly)
                                     .Sum(s => (double)(s.EndTime.Hour - s.StartTime.Hour)) * 2)) // 2 записи в час
                                 : 0
                         };
@@ -146,30 +162,35 @@ namespace WebApplication1.Services
         {
             var start = startDate ?? DateOnly.FromDateTime(DateTime.Today).AddMonths(-3).ToDateTime(TimeOnly.MinValue);
             var end = endDate ?? DateTime.Now;
+            var startDateOnly = DateOnly.FromDateTime(start);
+            var endDateOnly = DateOnly.FromDateTime(end);
 
             var query = from service in _context.ServicesClinics
-                        join slot in _context.RecordingSlots on service.ServiceId equals slot.ServiceId into slotsGroup
                         select new ServicePopularityDto
                         {
                             ServiceId = service.ServiceId,
                             ServiceName = service.Name,
                             Price = service.Price,
-                            TotalBookings = slotsGroup
-                                .Where(s => s.Date >= DateOnly.FromDateTime(start) && s.Date <= DateOnly.FromDateTime(end))
+                            TotalBookings = _context.RecordingSlots
+                                .Where(s => s.ServiceId == service.ServiceId 
+                                         && s.Date >= startDateOnly && s.Date <= endDateOnly)
                                 .Count(),
-                            UniquePatients = slotsGroup
-                                .Where(s => s.Date >= DateOnly.FromDateTime(start) && s.Date <= DateOnly.FromDateTime(end) 
-                                          && s.PatientId != null)
+                            UniquePatients = _context.RecordingSlots
+                                .Where(s => s.ServiceId == service.ServiceId 
+                                         && s.Date >= startDateOnly && s.Date <= endDateOnly 
+                                         && s.PatientId != null)
                                 .Select(s => s.PatientId)
                                 .Distinct()
                                 .Count(),
-                            TotalRevenue = slotsGroup
-                                .Where(s => s.Date >= DateOnly.FromDateTime(start) && s.Date <= DateOnly.FromDateTime(end))
+                            TotalRevenue = _context.RecordingSlots
+                                .Where(s => s.ServiceId == service.ServiceId 
+                                         && s.Date >= startDateOnly && s.Date <= endDateOnly)
                                 .Sum(s => (decimal?)service.Price) ?? 0,
-                            AvgBookingsPerDay = slotsGroup
-                                .Where(s => s.Date >= DateOnly.FromDateTime(start) && s.Date <= DateOnly.FromDateTime(end))
+                            AvgBookingsPerDay = _context.RecordingSlots
+                                .Where(s => s.ServiceId == service.ServiceId 
+                                         && s.Date >= startDateOnly && s.Date <= endDateOnly)
                                 .Count() / 
-                                (double)((DateOnly.FromDateTime(end) - DateOnly.FromDateTime(start)).Days + 1),
+                                (double)((endDateOnly - startDateOnly).Days + 1),
                             PopularityRank = 0 // Будет рассчитано отдельно
                         };
 
@@ -183,9 +204,10 @@ namespace WebApplication1.Services
         {
             var start = startDate ?? DateOnly.FromDateTime(DateTime.Today).AddMonths(-6).ToDateTime(TimeOnly.MinValue);
             var end = endDate ?? DateTime.Now;
+            var startDateOnly = DateOnly.FromDateTime(start);
+            var endDateOnly = DateOnly.FromDateTime(end);
 
             var query = from patient in _context.Patients
-                        join slot in _context.RecordingSlots on patient.PatientId equals slot.PatientId into slotsGroup
                         select new PatientActivityDto
                         {
                             PatientId = patient.PatientId,
@@ -194,17 +216,21 @@ namespace WebApplication1.Services
                             Phone = patient.Phone,
                             BirthDate = patient.BirthDate,
                             InsuranceNumber = patient.InsuranceNumber,
-                            TotalVisits = slotsGroup
-                                .Where(s => s.Date >= DateOnly.FromDateTime(start) && s.Date <= DateOnly.FromDateTime(end))
+                            TotalVisits = _context.RecordingSlots
+                                .Where(s => s.PatientId == patient.PatientId 
+                                         && s.Date >= startDateOnly && s.Date <= endDateOnly)
                                 .Count(),
-                            LastVisitDate = slotsGroup
-                                .Where(s => s.Date >= DateOnly.FromDateTime(start) && s.Date <= DateOnly.FromDateTime(end))
+                            LastVisitDate = _context.RecordingSlots
+                                .Where(s => s.PatientId == patient.PatientId 
+                                         && s.Date >= startDateOnly && s.Date <= endDateOnly)
                                 .Max(s => (DateOnly?)s.Date),
-                            TotalSpent = slotsGroup
-                                .Where(s => s.Date >= DateOnly.FromDateTime(start) && s.Date <= DateOnly.FromDateTime(end))
+                            TotalSpent = _context.RecordingSlots
+                                .Where(s => s.PatientId == patient.PatientId 
+                                         && s.Date >= startDateOnly && s.Date <= endDateOnly)
                                 .Sum(s => (decimal?)s.Service.Price) ?? 0,
-                            UniqueDoctors = slotsGroup
-                                .Where(s => s.Date >= DateOnly.FromDateTime(start) && s.Date <= DateOnly.FromDateTime(end))
+                            UniqueDoctors = _context.RecordingSlots
+                                .Where(s => s.PatientId == patient.PatientId 
+                                         && s.Date >= startDateOnly && s.Date <= endDateOnly)
                                 .Select(s => s.DoctorId)
                                 .Distinct()
                                 .Count(),
