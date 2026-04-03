@@ -11,6 +11,10 @@ public partial class Doctor
 
     public string FullName { get; set; } = null!;
 
+    public int? ExperienceYears { get; set; }
+
+    public string? Bio { get; set; }
+
     public virtual ICollection<RecordingSlot> RecordingSlots { get; set; } = new List<RecordingSlot>();
 
     public virtual ICollection<Schedule> Schedules { get; set; } = new List<Schedule>();
