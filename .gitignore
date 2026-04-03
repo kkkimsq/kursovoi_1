@@ -1,44 +1,47 @@
 ```
-# Build outputs
+# Build artifacts
 bin/
 obj/
-out/
+*.dll
+*.exe
+*.pdb
+*.config
+*.manifest
+*.nupkg
+packages/
 
 # Dependencies
-packages/
+node_modules/
+bower_components/
 
 # Logs
 *.log
 
-# User-specific files
-.vs/
-*.user
-*.userosscache
-*.suo
-
-# Environment specific settings
+# Environment
 .env
 .env.local
 *.env.*
 
+# Editors
+.vscode/
+.idea/
+*.userprefs
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
 # OS generated files
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Testing
 TestResults/
 
-# NuGet packages
-*.nupkg
-!src/**/packages/repositories.config
+# Localized resources
+*.resx
 
-# Visual Studio cache/options directory
-.vs/
-
-# Visual Studio Code
-.vscode/
-
-# Temporary files
-*.tmp
-*.temp
+# Publish artifacts
+publish/
 ```
