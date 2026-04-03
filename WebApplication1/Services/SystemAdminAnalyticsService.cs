@@ -332,38 +332,58 @@ namespace WebApplication1.Services
         }
 
         /// <summary>
-        /// Отчёт по загрузке врачей по часам (детализация)
+        /// Отчёт по загрузке врачей по часам (детализация) - для всех врачей за период
         /// </summary>
-        public IQueryable<HourlyLoadDto> GetHourlyLoadReport(int doctorId, DateOnly date)
+        public IQueryable<HourlyLoadDto> GetHourlyLoadReport(DateTime? startDate = null, DateTime? endDate = null)
         {
-            var query = from schedule in _context.Schedules
-                        where schedule.DoctorId == doctorId && schedule.Date == date
+            var start = startDate ?? DateOnly.FromDateTime(DateTime.Today).AddMonths(-1).ToDateTime(TimeOnly.MinValue);
+            var end = endDate ?? DateTime.Now;
+            var startDateOnly = DateOnly.FromDateTime(start);
+            var endDateOnly = DateOnly.FromDateTime(end);
+
+            var query = from slot in _context.RecordingSlots
+                        where slot.Date >= startDateOnly && slot.Date <= endDateOnly
+                        group slot by new { slot.Date, Hour = slot.StartTime.Hour } into g
                         select new HourlyLoadDto
                         {
-                            Date = schedule.Date,
-                            StartHour = schedule.StartTime.Hour,
-                            EndHour = schedule.EndTime.Hour,
-                            ScheduledMinutes = (schedule.EndTime.Hour - schedule.StartTime.Hour) * 60 + 
-                                             (schedule.EndTime.Minute - schedule.StartTime.Minute),
-                            BookedSlots = _context.RecordingSlots
-                                .Where(s => s.DoctorId == schedule.DoctorId && s.Date == schedule.Date)
-                                .Count(s => s.PatientId != null),
-                            FreeSlots = _context.RecordingSlots
-                                .Where(s => s.DoctorId == schedule.DoctorId && s.Date == schedule.Date)
-                                .Count(s => s.PatientId == null),
-                            UtilizationPercent = _context.RecordingSlots
-                                .Where(s => s.DoctorId == schedule.DoctorId && s.Date == schedule.Date)
-                                .Any()
-                                ? (_context.RecordingSlots
-                                    .Where(s => s.DoctorId == schedule.DoctorId && s.Date == schedule.Date)
-                                    .Count(s => s.PatientId != null) * 100.0 / 
-                                   _context.RecordingSlots
-                                    .Where(s => s.DoctorId == schedule.DoctorId && s.Date == schedule.Date)
-                                    .Count())
+                            Date = g.Key.Date,
+                            StartHour = g.Key.Hour,
+                            EndHour = g.Key.Hour + 1,
+                            ScheduledMinutes = 60,
+                            BookedSlots = g.Count(s => s.PatientId != null),
+                            FreeSlots = g.Count(s => s.PatientId == null),
+                            UtilizationPercent = g.Any() 
+                                ? (g.Count(s => s.PatientId != null) * 100.0 / g.Count()) 
                                 : 0
                         };
 
-            return query;
+            return query.OrderBy(h => h.Date).ThenBy(h => h.StartHour);
+        }
+
+        // Методы с async для контроллера
+        public async Task<List<DoctorAnalyticsDto>> GetDoctorAnalyticsReportAsync(DateTime? startDate = null, DateTime? endDate = null)
+        {
+            return await GetDoctorAnalyticsReport(startDate, endDate).ToListAsync();
+        }
+
+        public async Task<List<ServicePopularityDto>> GetServicePopularityReportAsync(DateTime? startDate = null, DateTime? endDate = null)
+        {
+            return await GetServicePopularityReport(startDate, endDate).ToListAsync();
+        }
+
+        public async Task<List<PatientActivityDto>> GetPatientActivityReportAsync(DateTime? startDate = null, DateTime? endDate = null)
+        {
+            return await GetPatientActivityReport(startDate, endDate).ToListAsync();
+        }
+
+        public async Task<SystemSummaryDto> GetSystemSummaryAsync(DateTime? startDate = null, DateTime? endDate = null)
+        {
+            return GetSystemSummary(startDate, endDate);
+        }
+
+        public async Task<List<HourlyLoadDto>> GetHourlyLoadReportAsync(DateTime? startDate = null, DateTime? endDate = null)
+        {
+            return await GetHourlyLoadReport(startDate, endDate).ToListAsync();
         }
     }
 
@@ -391,6 +411,11 @@ namespace WebApplication1.Services
         public int ThursdayAppointments { get; set; }
         public int FridayAppointments { get; set; }
         public double ScheduleUtilizationPercent { get; set; }
+
+        // Дополнительные свойства для контроллера
+        public string FullName => DoctorFullName;
+        public double UtilizationRate => ScheduleUtilizationPercent;
+        public decimal AverageCheck => AverageAppointmentCost;
     }
 
     /// <summary>
@@ -406,6 +431,10 @@ namespace WebApplication1.Services
         public decimal TotalRevenue { get; set; }
         public double AvgBookingsPerDay { get; set; }
         public int PopularityRank { get; set; }
+
+        // Дополнительные свойства для контроллера
+        public int BookingsCount => TotalBookings;
+        public double PercentageOfTotal => 0; // Будет заполнено в контроллере или сервисе
     }
 
     /// <summary>
@@ -446,6 +475,12 @@ namespace WebApplication1.Services
         public double ConversionRate { get; set; }
         public List<TopPerformerDto> TopDoctors { get; set; } = new();
         public List<TopPerformerDto> TopServices { get; set; } = new();
+
+        // Дополнительные свойства для контроллера
+        public int ActivePatients => TotalPatients;
+        public int NewAppointments => BookedAppointments;
+        public double AverageCheck => TotalPatients > 0 ? (double)TotalRevenue / TotalPatients : 0;
+        public double AverageAppointmentCost => TotalAppointments > 0 ? (double)TotalRevenue / TotalAppointments : 0;
     }
 
     /// <summary>
@@ -470,6 +505,10 @@ namespace WebApplication1.Services
         public int BookedSlots { get; set; }
         public int FreeSlots { get; set; }
         public double UtilizationPercent { get; set; }
+
+        // Дополнительное свойство для контроллера
+        public int AppointmentsCount => BookedSlots;
+        public int Hour => StartHour;
     }
 
     #endregion

@@ -18,11 +18,30 @@ public class DoctorsController : Controller
     }
 
     [AllowAnonymous]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int? specialtyId, string searchName)
     {
-        var doctors = await _context.Doctors
+        var doctorsQuery = _context.Doctors
             .Include(d => d.Specialization)
-            .ToListAsync();
+            .AsQueryable();
+
+        // Фильтрация по специализации
+        if (specialtyId.HasValue && specialtyId.Value > 0)
+        {
+            doctorsQuery = doctorsQuery.Where(d => d.SpecializationId == specialtyId.Value);
+        }
+
+        // Поиск по имени врача
+        if (!string.IsNullOrWhiteSpace(searchName))
+        {
+            doctorsQuery = doctorsQuery.Where(d => d.FullName.Contains(searchName));
+        }
+
+        // Получаем список всех специализаций для фильтра
+        ViewBag.Specialties = await _context.Specialties.ToListAsync();
+        ViewBag.CurrentSpecialtyId = specialtyId;
+        ViewBag.SearchName = searchName;
+
+        var doctors = await doctorsQuery.ToListAsync();
         return View(doctors);
     }
 
@@ -36,6 +55,31 @@ public class DoctorsController : Controller
             .FirstOrDefaultAsync(m => m.DoctorId == id);
 
         if (doctor == null) return NotFound();
+
+        // Получаем услуги, которые оказывает врач (через слоты расписания)
+        var services = await _context.RecordingSlots
+            .Where(r => r.DoctorId == doctor.DoctorId)
+            .Include(r => r.Service)
+            .Select(r => r.Service)
+            .Distinct()
+            .ToListAsync();
+
+        ViewBag.Services = services;
+
+        // Получаем ближайшие свободные слоты для этого врача
+        var today = DateOnly.FromDateTime(DateTime.Now);
+        var freeSlots = await _context.RecordingSlots
+            .Where(r => r.DoctorId == doctor.DoctorId 
+                     && r.PatientId == null 
+                     && r.Date >= today)
+            .Include(r => r.Service)
+            .OrderBy(r => r.Date)
+            .ThenBy(r => r.StartTime)
+            .Take(10)
+            .ToListAsync();
+
+        ViewBag.FreeSlots = freeSlots;
+
         return View(doctor);
     }
 }

@@ -1,30 +1,167 @@
 ﻿@model WebApplication1.Models.Doctor
-
 @{
-    ViewData["Title"] = "Детали";
+    ViewData["Title"] = "Информация о враче";
+    var services = ViewBag.Services as List<WebApplication1.Models.ServicesClinic>;
+    var freeSlots = ViewBag.FreeSlots as List<WebApplication1.Models.RecordingSlot>;
 }
 
-<h1>Детали</h1>
+<div class="container mt-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Врачи</a></li>
+            <li class="breadcrumb-item active">@Model.FullName</li>
+        </ol>
+    </nav>
 
-<div>
-    <h4>Врач</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            ФИО
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.FullName)
-        </dd>
-        <dt class = "col-sm-2">
-            Специализация
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Specialization.SpecializationId)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.DoctorId">Изменить</a> |
-    <a asp-action="Index">Вернуться</a>
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">👨‍⚕️ @Model.FullName</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 text-center">
+                    <div class="rounded-circle mb-3 mx-auto"
+                         style="width: 150px; height: 150px; background-color: #D9D9D9;
+                                display: flex; align-items: center; justify-content: center;">
+                        <span style="font-size: 60px;">👨‍⚕️</span>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <h4>Информация о специалисте</h4>
+                    <p><strong>Специализация:</strong> 
+                        <span class="badge bg-primary">@Model.Specialization?.Name</span>
+                    </p>
+                    <p><strong>Опыт работы:</strong> 
+                        @(Model.ExperienceYears.HasValue ? Model.ExperienceYears.Value + " лет" : "Не указан")
+                    </p>
+                    @if (!string.IsNullOrEmpty(Model.Bio))
+                    {
+                        <p><strong>О себе:</strong></p>
+                        <p class="text-muted">@Model.Bio</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (services != null && services.Any())
+    {
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">💊 Медицинские услуги</h4>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Название услуги</th>
+                            <th>Стоимость</th>
+                            <th>Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var service in services)
+                        {
+                            <tr>
+                                <td>@service.Name</td>
+                                <td><strong>@service.Price.ToString("N2")} ₽</strong></td>
+                                <td>
+                                    @if (User.Identity.IsAuthenticated)
+                                    {
+                                        <a asp-controller="Appointments" asp-action="Create" 
+                                           asp-route-doctorId="@Model.DoctorId"
+                                           asp-route-serviceId="@service.ServiceId"
+                                           class="btn btn-sm btn-success">
+                                            Записаться
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-controller="Account" asp-action="Login" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            Войти для записи
+                                        </a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    @if (freeSlots != null && freeSlots.Any())
+    {
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">📅 Ближайшие свободные слоты</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Время</th>
+                                <th>Услуга</th>
+                                <th>Действие</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var slot in freeSlots)
+                            {
+                                <tr>
+                                    <td>@slot.Date.ToString("dd.MM.yyyy")</td>
+                                    <td>@slot.StartTime.ToString("HH:mm")</td>
+                                    <td>@slot.Service?.Name</td>
+                                    <td>
+                                        @if (User.Identity.IsAuthenticated)
+                                        {
+                                            <a asp-controller="Appointments" asp-action="Create" 
+                                               asp-route-doctorId="@Model.DoctorId"
+                                               asp-route-serviceId="@slot.ServiceId"
+                                               asp-route-date="@slot.Date"
+                                               asp-route-time="@slot.StartTime"
+                                               class="btn btn-sm btn-primary">
+                                                Выбрать
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a asp-controller="Account" asp-action="Login" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                Войти
+                                            </a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            <i class="bi bi-calendar-x"></i>
+            На данный момент нет свободных слотов для записи. Попробуйте позже или выберите другого врача.
+        </div>
+    }
+
+    <div class="mt-4">
+        <a asp-action="Index" class="btn btn-secondary">
+            ← Назад к списку врачей
+        </a>
+        @if (User.Identity.IsAuthenticated)
+        {
+            <a asp-controller="Appointments" asp-action="Create" 
+               asp-route-doctorId="@Model.DoctorId"
+               class="btn btn-success ms-2">
+                ✏️ Записаться на прием
+            </a>
+        }
+    </div>
 </div>
