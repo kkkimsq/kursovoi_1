@@ -1,0 +1,48 @@
+﻿@model WebApplication1.Models.RecordingSlot
+
+@{
+    ViewData["Title"] = "Детали";
+}
+
+<h1>Детали</h1>
+
+<div>
+    <h4>Слот записи</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            Дата
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Date)
+        </dd>
+        <dt class = "col-sm-2">
+            Время начала
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.StartTime)
+        </dd>
+        <dt class = "col-sm-2">
+            Врач
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Doctor.DoctorId)
+        </dd>
+        <dt class = "col-sm-2">
+           Пациент
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Patient.PatientId)
+        </dd>
+        <dt class = "col-sm-2">
+            Услуга
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Service.ServiceId)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.SlotId">Изменить</a> |
+    <a asp-action="Index">Вернуться</a>
+</div>

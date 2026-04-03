@@ -1,0 +1,30 @@
+﻿@model WebApplication1.Models.ServicesClinic
+
+@{
+    ViewData["Title"] = "Детали";
+}
+
+<h1>Детали</h1>
+
+<div>
+    <h4>Услуги</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            Наименование
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+        <dt class = "col-sm-2">
+            Цена
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Price)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.ServiceId">Изменить</a> |
+    <a asp-action="Index">Вернуться</a>
+</div>

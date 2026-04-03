@@ -1,0 +1,64 @@
+﻿@model IEnumerable<WebApplication1.Models.ServicesClinic>
+@{
+    ViewData["Title"] = "Услуги";
+}
+
+<div class="text-center mb-5">
+    <h2 style="color: #0040C1;">Медицинские услуги</h2>
+    <p class="lead">Полный спектр медицинских услуг для вашего здоровья</p>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead style="background-color: #B4CDFF;">
+            <tr>
+                <th style="color: #0040C1;">Наименование услуги</th>
+                <th style="color: #0040C1; text-align: right;">Стоимость (руб.)</th>
+                <th style="color: #0040C1;">Действие</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var service in Model)
+            {
+                <tr>
+                    <td>@service.Name</td>
+                    <td style="text-align: right; font-weight: bold;">@service.Price.ToString("F2")</td>
+                    <td>
+                        <a href="@Url.Action("Create", "Appointments")"
+                           class="btn btn-sm btn-primary"
+                           style="background-color: #0040C1; border-color: #0040C1;">
+                            Записаться
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title" style="color: #0040C1;">🏥 Консультации специалистов</h5>
+                <p class="card-text">Прием ведут опытные врачи высшей категории</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title" style="color: #0040C1;">🔬 Диагностика</h5>
+                <p class="card-text">УЗИ, анализы, рентген и другие исследования</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title" style="color: #0040C1;">📋 Оформление документов</h5>
+                <p class="card-text">Медицинские справки и заключения</p>
+            </div>
+        </div>
+    </div>
+</div>

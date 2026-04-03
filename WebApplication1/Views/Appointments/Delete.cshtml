@@ -1,0 +1,51 @@
+﻿@model WebApplication1.Models.Appointment
+
+@{
+    ViewData["Title"] = "Удалить";
+}
+
+<h1>Удалить</h1>
+
+<h3>Вы уверены что хотите удалить?</h3>
+<div>
+    <h4>Прием</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            Диагноз
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Diagnosis)
+        </dd>
+        <dt class = "col-sm-2">
+            Рекомендации
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Recommendations)
+        </dd>
+        <dt class = "col-sm-2">
+            Итоговая сумма
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.FinalCost)
+        </dd>
+        <dt class = "col-sm-2">
+            Дата создания
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.CreationDate)
+        </dd>
+        <dt class = "col-sm-2">
+            Слот записи
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.AppointmentNavigation.SlotId)
+        </dd>
+    </dl>
+    
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="AppointmentId" />
+        <input type="submit" value="Удалить" class="btn btn-danger" /> |
+        <a asp-action="Index">Вернуться</a>
+    </form>
+</div>

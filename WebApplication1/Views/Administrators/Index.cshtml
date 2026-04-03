@@ -1,0 +1,47 @@
+﻿@model IEnumerable<WebApplication1.Models.Administrator>
+
+@{
+    ViewData["Title"] = "Администраторы";
+}
+
+<h1>Администраторы</h1>
+
+<p>
+    <a asp-action="Create">Создать нового</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                ФИО
+            </th>
+            <th>
+                Логин
+            </th>
+            <th>
+                Пароль
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.FullName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Login)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Password)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.AdminId">Изменить</a> |
+                <a asp-action="Details" asp-route-id="@item.AdminId">Детали</a> |
+                <a asp-action="Delete" asp-route-id="@item.AdminId">Удалить</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

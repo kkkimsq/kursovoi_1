@@ -1,0 +1,46 @@
+﻿@model IEnumerable<WebApplication1.Models.Doctor>
+@{
+    ViewData["Title"] = "Врачи";
+}
+
+<div class="text-center mb-5">
+    <h2 style="color: #0040C1;">Наши специалисты</h2>
+    <p>Выберите врача для записи на прием.</p>
+</div>
+
+<div class="row">
+    @foreach (var doctor in Model)
+    {
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <div class="rounded-circle mb-3 mx-auto"
+                         style="width: 100px; height: 100px; background-color: #D9D9D9;
+                                    display: flex; align-items: center; justify-content: center;">
+                        <span style="font-size: 40px;">👨‍️</span>
+                    </div>
+                    <h5 class="card-title">@doctor.FullName</h5>
+                    <p class="text-primary">@doctor.Specialization?.Name</p>
+
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <a href="@Url.Action("Create", "Appointments",
+                                                              new { doctorId = doctor.DoctorId })"
+                   class="btn btn-primary"
+                   style="background-color: #0040C1; border-color: #0040C1;">
+                    Записаться
+                </a>
+                                }
+                    else
+                    {
+                        <a href="@Url.Action("Login", "Account")"
+                           class="btn btn-primary"
+                           style="background-color: #0040C1; border-color: #0040C1;">
+                            Записаться
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>

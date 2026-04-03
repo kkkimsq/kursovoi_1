@@ -1,0 +1,30 @@
+﻿@model WebApplication1.Models.Doctor
+
+@{
+    ViewData["Title"] = "Детали";
+}
+
+<h1>Детали</h1>
+
+<div>
+    <h4>Врач</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            ФИО
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.FullName)
+        </dd>
+        <dt class = "col-sm-2">
+            Специализация
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Specialization.SpecializationId)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.DoctorId">Изменить</a> |
+    <a asp-action="Index">Вернуться</a>
+</div>

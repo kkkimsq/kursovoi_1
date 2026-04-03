@@ -1,0 +1,53 @@
+﻿@model IEnumerable<WebApplication1.Models.Schedule>
+
+@{
+    ViewData["Title"] = "Расписание";
+}
+
+<h1>Расписание</h1>
+
+<p>
+    <a asp-action="Create">Создать новое</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Дата
+            </th>
+            <th>
+                Время начала дня
+            </th>
+            <th>
+               Время конца дня
+            </th>
+            <th>
+                Врач
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Date)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.StartTime)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EndTime)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Doctor.DoctorId)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.ScheduleId">Изменить</a> |
+                <a asp-action="Details" asp-route-id="@item.ScheduleId">Детали</a> |
+                <a asp-action="Delete" asp-route-id="@item.ScheduleId">Удалить</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

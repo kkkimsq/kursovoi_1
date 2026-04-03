@@ -1,0 +1,71 @@
+﻿@model IEnumerable<WebApplication1.Models.Patient>
+
+@{
+    ViewData["Title"] = "Пациенты";
+}
+
+<h1>Пациенты</h1>
+
+<p>
+    <a asp-action="Create">Создать нового</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                ФИО
+            </th>
+            <th>
+                Дата рождения
+            </th>
+            <th>
+                Номер телефона
+            </th>
+            <th>
+                Номер полиса
+            </th>
+            <th>
+                Пол
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Email)
+            </th>
+            <th>
+               Пароль
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.FullName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.BirthDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Phone)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.InsuranceNumber)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Gender)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Email)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Password)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.PatientId">Изменить</a> |
+                <a asp-action="Details" asp-route-id="@item.PatientId">Детали</a> |
+                <a asp-action="Delete" asp-route-id="@item.PatientId">Удалить</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

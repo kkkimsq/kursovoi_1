@@ -1,0 +1,59 @@
+﻿@model IEnumerable<WebApplication1.Models.RecordingSlot>
+
+@{
+    ViewData["Title"] = "Слот записи";
+}
+
+<h1>Слот записи</h1>
+
+<p>
+    <a asp-action="Create">Создать новый</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Дата
+            </th>
+            <th>
+                Время начала
+            </th>
+            <th>
+                Врач
+            </th>
+            <th>
+                Пациент
+            </th>
+            <th>
+                Услуга
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Date)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.StartTime)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Doctor.DoctorId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Patient.PatientId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Service.ServiceId)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.SlotId">Изменить</a> |
+                <a asp-action="Details" asp-route-id="@item.SlotId">Детали</a> |
+                <a asp-action="Delete" asp-route-id="@item.SlotId">Удалить</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

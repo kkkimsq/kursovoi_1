@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Запись на прием</title>
+    <link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Поликлиника №1</div>
+        <nav>
+            <ul>
+                <li><a href="Index.html">Главная</a></li>
+                <li><a href="Doctors.html">Врачи</a></li>
+                <li><a href="Services.html">Услуги</a></li>
+                <li><a href="Contacts.html">Контакты</a></li>
+                <li><a href="Login.html" class="btn btn-accent">Войти</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h2 style="color: var(--primary-blue);">Онлайн запись</h2>
+        <form action="/api/book-appointment" method="POST" style="max-width: 600px; margin: 0 auto;">
+
+            <label>Выберите услугу:</label>
+            <select name="service_id" style="width: 100%; padding: 10px; margin-bottom: 20px;">
+                <option value="1">Консультация (1500 руб.)</option>
+                <option value="2">Анализ крови (800 руб.)</option>
+                <option value="3">УЗИ (2500 руб.)</option>
+            </select>
+
+            <label>Выберите врача:</label>
+            <select name="doctor_id" style="width: 100%; padding: 10px; margin-bottom: 20px;">
+                <option value="1">Смирнова О.В. (Терапевт)</option>
+                <option value="2">Козлов Д.А. (Хирург)</option>
+            </select>
+
+            <label>Дата приема:</label>
+            <input type="date" name="date" required style="width: 100%; padding: 10px; margin-bottom: 20px;">
+
+            <label>Время приема:</label>
+            <select name="time" style="width: 100%; padding: 10px; margin-bottom: 20px;">
+                <option value="09:00">09:00</option>
+                <option value="10:00">10:00</option>
+                <option value="11:00">11:00</option>
+            </select>
+
+            <hr style="margin: 30px 0;">
+            <h3>Ваши данные</h3>
+            <input type="text" name="full_name" placeholder="ФИО" required style="width: 100%; padding: 10px; margin-bottom: 10px;">
+            <input type="tel" name="phone" placeholder="Телефон" required style="width: 100%; padding: 10px; margin-bottom: 10px;">
+            <input type="email" name="email" placeholder="Email" required style="width: 100%; padding: 10px; margin-bottom: 20px;">
+
+            <button type="submit" class="btn btn-accent" style="width: 100%;">Записаться на прием</button>
+        </form>
+    </div>
+</body>
+</html>

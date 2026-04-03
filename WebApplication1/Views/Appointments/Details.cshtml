@@ -1,0 +1,48 @@
+﻿@model WebApplication1.Models.Appointment
+
+@{
+    ViewData["Title"] = "Детали";
+}
+
+<h1>Детали</h1>
+
+<div>
+    <h4>Прием</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            Диагноз
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Diagnosis)
+        </dd>
+        <dt class = "col-sm-2">
+           Рекомендации
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Recommendations)
+        </dd>
+        <dt class = "col-sm-2">
+           Итоговая сумма
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.FinalCost)
+        </dd>
+        <dt class = "col-sm-2">
+           Дата создания
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.CreationDate)
+        </dd>
+        <dt class = "col-sm-2">
+            Слот записи
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.AppointmentNavigation.SlotId)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.AppointmentId">Изменить</a> |
+    <a asp-action="Index">Вернуться</a>
+</div>

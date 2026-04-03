@@ -1,0 +1,39 @@
+﻿@{
+    ViewData["Title"] = "Главная";
+}
+
+<div class="text-center">
+    <h1 class="display-4" style="color: #0040C1;">Забота о вашем здоровье</h1>
+    <p class="lead">Современное оборудование, квалифицированные врачи и комфортный сервис.</p>
+    <br>
+    <a href="@Url.Action("Create", "Appointments")" class="btn btn-primary btn-lg" style="background-color: #0040C1; border-color: #0040C1;">
+        Записаться на прием
+    </a>
+
+    <div class="row mt-5">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="card-title">👨‍️ Опытные врачи</h3>
+                    <p class="card-text">Специалисты высшей категории</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="card-title">🔬 Современная диагностика</h3>
+                    <p class="card-text">УЗИ, анализы, рентген</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="card-title">🕒 Удобное время</h3>
+                    <p class="card-text">Запись онлайн 24/7</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

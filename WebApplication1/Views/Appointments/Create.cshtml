@@ -1,0 +1,74 @@
+﻿@model WebApplication1.Models.RecordingSlot
+@{
+    ViewData["Title"] = "Запись на прием";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h2 style="color: #0040C1;">Онлайн запись</h2>
+
+        <form asp-action="Create" method="post">
+            <div class="mb-3">
+                <label class="form-label">Выберите услугу:</label>
+                <select asp-for="ServiceId" class="form-select">
+                    <option value="">-- Выберите услугу --</option>
+                    @foreach (var service in ViewBag.Services)
+                    {
+                        <option value="@service.ServiceId">@service.Name (@service.Price руб.)</option>
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Выберите врача:</label>
+                <select asp-for="DoctorId" class="form-select">
+                    <option value="">-- Выберите врача --</option>
+                    @foreach (var doctor in ViewBag.Doctors)
+                    {
+                        <option value="@doctor.DoctorId">@doctor.FullName (@doctor.Specialty.Name)</option>
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Дата приема:</label>
+                <input asp-for="Date" type="date" class="form-control" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Время приема:</label>
+                <select asp-for="StartTime" class="form-select">
+                    <option value="09:00">09:00</option>
+                    <option value="10:00">10:00</option>
+                    <option value="11:00">11:00</option>
+                    <option value="12:00">12:00</option>
+                    <option value="14:00">14:00</option>
+                    <option value="15:00">15:00</option>
+                </select>
+            </div>
+
+            <hr class="my-4" />
+
+            <h4>Ваши данные</h4>
+
+            <div class="mb-3">
+                <label class="form-label">ФИО:</label>
+                <input name="PatientFullName" class="form-control" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Телефон:</label>
+                <input name="PatientPhone" class="form-control" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email:</label>
+                <input name="PatientEmail" type="email" class="form-control" required />
+            </div>
+
+            <button type="submit" class="btn btn-accent w-100" style="background-color: #F59A1A; color: white;">
+                Записаться на прием
+            </button>
+        </form>
+    </div>
+</div>
